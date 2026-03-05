@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://wvnkmcadtw0c"]
+
+[ext_resource type="Script" uid="uid://ci0v8hptl4gfg" path="res://game.gd" id="1_e2o6t"]
+[ext_resource type="PackedScene" uid="uid://cc0ncmgaulvs0" path="res://bird.tscn" id="2_feb5d"]
+
+[node name="Game" type="Node2D" unique_id=869731722]
+script = ExtResource("1_e2o6t")
+
+[node name="CharacterBody2D" parent="." unique_id=1513228546 instance=ExtResource("2_feb5d")]
+position = Vector2(273, 357)
+
+[node name="Pipes" type="Node2D" parent="." unique_id=496410657]
