@@ -4,7 +4,7 @@ extends Node2D
 const PIPE_SCENE = preload("res://pipe.tscn")
 
 # 配置参数（可以在检查器中调整）
-@export var pipe_speed: float = 200.0      # 管道移动速度
+@export var pipe_speed: float = 150.0      # 管道移动速度
 @export var spawn_interval: float = 2.0    # 生成间隔（秒）
 @export var pipe_gap: float = 150.0        # 上下管道间隙
 @export var gap_move_speed: float = 80.0   # gap位置变化速度
@@ -12,6 +12,7 @@ const PIPE_SCENE = preload("res://pipe.tscn")
 # 内部变量
 var _spawn_timer: float = 0.0
 var _current_gap_y: float = 320.0  # 当前间隙位置（屏幕中心）
+var score: int = 0  # 分数
 
 
 func _process(delta: float) -> void:
@@ -25,6 +26,9 @@ func _process(delta: float) -> void:
 	
 	# 3. 移动所有管道
 	_move_pipes(delta)
+	
+	# 4. 计分检测
+	_check_score()
 
 
 func _spawn_pipe_pair() -> void:
@@ -61,6 +65,7 @@ func _spawn_pipe_pair() -> void:
 	var top_pipe = PIPE_SCENE.instantiate()
 	$Pipes.add_child(top_pipe)
 	top_pipe.position = Vector2(spawn_x, gap_center_y - pipe_gap / 2 - pipe_height)
+	top_pipe.is_bottom = false  # 标记为上管道
 	# 设置管道视觉大小
 	top_pipe.get_node("ColorRect").size.y = pipe_height
 	top_pipe.get_node("CollisionShape2D").shape.size.y = pipe_height
@@ -70,6 +75,7 @@ func _spawn_pipe_pair() -> void:
 	var bottom_pipe = PIPE_SCENE.instantiate()
 	$Pipes.add_child(bottom_pipe)
 	bottom_pipe.position = Vector2(spawn_x, gap_center_y + pipe_gap / 2)
+	bottom_pipe.is_bottom = true  # 标记为下管道
 	# 设置管道视觉大小
 	bottom_pipe.get_node("ColorRect").size.y = pipe_height
 	bottom_pipe.get_node("CollisionShape2D").shape.size.y = pipe_height
@@ -85,3 +91,17 @@ func _move_pipes(delta: float) -> void:
 		# 如果离开屏幕，销毁
 		if pipe.position.x < -100:
 			pipe.queue_free()
+
+
+func _check_score() -> void:
+	"""检测是否得分"""
+	var bird = $CharacterBody2D
+	
+	for pipe in $Pipes.get_children():
+		# 如果小鸟穿过了管道且未被计分
+		if not pipe.scored and bird.position.x > pipe.position.x + 50:
+			pipe.scored = true
+			# 只对下管道计分
+			if pipe.is_bottom:
+				score += 1
+				print("得分: ", score)
