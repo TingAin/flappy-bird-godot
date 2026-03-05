@@ -3,10 +3,99 @@
 [ext_resource type="Script" uid="uid://ci0v8hptl4gfg" path="res://game.gd" id="1_e2o6t"]
 [ext_resource type="PackedScene" uid="uid://cc0ncmgaulvs0" path="res://bird.tscn" id="2_feb5d"]
 
-[node name="Game" type="Node2D" unique_id=869731722]
+[node name="Game" type="Node2D" unique_id=115832080]
 script = ExtResource("1_e2o6t")
 
-[node name="CharacterBody2D" parent="." unique_id=1513228546 instance=ExtResource("2_feb5d")]
-position = Vector2(273, 357)
+[node name="CharacterBody2D" parent="." unique_id=1929944531 instance=ExtResource("2_feb5d")]
+position = Vector2(100, 320)
 
-[node name="Pipes" type="Node2D" parent="." unique_id=496410657]
+[node name="Pipes" type="Node2D" parent="." unique_id=936914649]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1866656893]
+
+[node name="UI" type="Control" parent="CanvasLayer" unique_id=1267291037]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ScoreLabel" type="Label" parent="CanvasLayer/UI" unique_id=1597355567]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 100.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 32
+text = "0"
+
+[node name="GameOver" type="Control" parent="CanvasLayer/UI" unique_id=593777717]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="CanvasLayer/UI/GameOver" unique_id=1341299038]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.501961)
+
+[node name="Title" type="Label" parent="CanvasLayer/UI/GameOver" unique_id=1144536803]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -80.0
+offset_right = 100.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 48
+text = "Game Over"
+horizontal_alignment = 1
+
+[node name="ScoreInfo" type="Label" parent="CanvasLayer/UI/GameOver" unique_id=303739000]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.0
+offset_top = -20.0
+offset_right = 80.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 24
+text = "Score: 0"
+horizontal_alignment = 1
+
+[node name="RestartButton" type="Button" parent="CanvasLayer/UI/GameOver" unique_id=1619337070]
+process_mode = 3
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -60.0
+offset_top = 40.0
+offset_right = 60.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Restart"
+
+[connection signal="pressed" from="CanvasLayer/UI/GameOver/RestartButton" to="." method="_on_restart_button_pressed"]

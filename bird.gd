@@ -17,13 +17,21 @@ func _physics_process(delta: float) -> void:
 	
 	# 碰撞检测
 	_check_collision()
+	
+	# 边界检测
+	_check_boundary()
 
 
 func _check_collision() -> void:
 	"""检测是否撞到管道"""
-	var collision_count = get_slide_collision_count()
+	if get_slide_collision_count() > 0:
+		GameManager.game_over()
+
+
+func _check_boundary() -> void:
+	"""检测是否撞到边界"""
+	var screen_size = get_viewport().get_visible_rect().size
 	
-	if collision_count > 0:
-		# 撞到了东西
-		print("游戏结束！撞到了管道")
-		get_tree().paused = true
+	# 撞到天花板或地面
+	if position.y < 0 or position.y > screen_size.y:
+		GameManager.game_over()
