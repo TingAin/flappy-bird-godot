@@ -4,10 +4,13 @@ extends Node2D
 const PIPE_SCENE = preload("res://pipe.tscn")
 
 # 配置参数
-@export var pipe_speed: float = 150.0
+@export var base_pipe_speed: float = 150.0   # 基础管道速度
 @export var spawn_interval: float = 2.0
 @export var pipe_gap: float = 150.0
 @export var gap_move_speed: float = 80.0
+
+# 当前管道速度（会被加速影响）
+var _current_pipe_speed: float = 150.0
 
 # 内部变量
 var _spawn_timer: float = 0.0
@@ -20,10 +23,12 @@ var _current_gap_y: float = 320.0
 
 
 func _ready() -> void:
-	# 连接游戏结束信号
+	# 连接信号
 	GameManager.on_game_over.connect(_on_game_over)
+	GameManager.on_speed_up.connect(_on_speed_up)
 	# 游戏开始时重置
 	GameManager.reset_score()
+	_current_pipe_speed = base_pipe_speed
 	_update_score_display()
 	game_over_panel.visible = false
 
@@ -31,6 +36,12 @@ func _ready() -> void:
 func _on_game_over() -> void:
 	"""游戏结束信号回调"""
 	show_game_over()
+
+
+func _on_speed_up() -> void:
+	"""加速信号回调"""
+	_current_pipe_speed = base_pipe_speed * GameManager.speed_multiplier
+	print("加速！当前速度倍率: ", GameManager.speed_multiplier)
 
 
 func _process(delta: float) -> void:
@@ -88,7 +99,7 @@ func _spawn_pipe_pair() -> void:
 
 func _move_pipes(delta: float) -> void:
 	for pipe in $Pipes.get_children():
-		pipe.position.x -= pipe_speed * delta
+		pipe.position.x -= _current_pipe_speed * delta
 		if pipe.position.x < -100:
 			pipe.queue_free()
 
