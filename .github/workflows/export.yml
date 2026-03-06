@@ -25,11 +25,6 @@ jobs:
             runner: ubuntu-latest
             preset: linux
             artifact: fbv0.1.x86_64
-          # macOS 暂时禁用（内存不足问题）
-          # - platform: mac
-          #   runner: macos-latest
-          #   preset: mac
-          #   artifact: fbv0.1.app.zip
 
     steps:
       - name: Checkout
@@ -44,7 +39,15 @@ jobs:
       - name: Import Project
         run: godot --headless --import
 
-      - name: Build
+      - name: Build (Windows)
+        if: matrix.platform == 'windows'
+        run: |
+          mkdir build
+          godot --headless --export-release "${{ matrix.preset }}" build/${{ matrix.artifact }}
+        shell: pwsh
+
+      - name: Build (Linux)
+        if: matrix.platform == 'linux'
         run: |
           mkdir -p build
           godot --headless --export-release "${{ matrix.preset }}" build/${{ matrix.artifact }}
@@ -54,6 +57,7 @@ jobs:
         with:
           name: ${{ matrix.platform }}
           path: build/
+          if-no-files-found: error
 
   release:
     name: Create Release
@@ -66,9 +70,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: build/
+          merge-multiple: true
+
+      - name: List files
+        run: ls -la build/
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: build/**/*
+          files: build/*
           generate_release_notes: true
