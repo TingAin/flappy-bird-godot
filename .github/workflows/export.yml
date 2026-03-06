@@ -9,69 +9,91 @@ on:
 permissions:
   contents: write
 
-env:
-  GODOT_VERSION: 4.6.1
-
 jobs:
-  export:
-    name: Export ${{ matrix.platform }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: windows
-            runner: windows-latest
-            preset: windows
-            artifact: fbv0.1.exe
-          - platform: linux
-            runner: ubuntu-latest
-            preset: linux
-            artifact: fbv0.1.x86_64
-
+  export-windows:
+    name: Export Windows
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.6.1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Godot
-        uses: chickensoft-games/setup-godot@v1
-        with:
-          version: ${{ env.GODOT_VERSION }}
-          include-templates: true
+      - name: Setup templates
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates
+          mv /root/.local/share/godot/export_templates/4.6.1.stable ~/.local/share/godot/export_templates/4.6.1.stable
 
-      - name: Import Project
+      - name: Import project
         run: godot --headless --import
 
-      - name: Export Game
-        run: |
-          godot --headless --export-release "${{ matrix.preset }}"
+      - name: Export Windows
+        run: godot --headless --export-release "windows" .
 
-      - name: Verify Export
-        run: |
-          ls -la
-          ls -la build/ || echo "build directory not found"
+      - name: List files
+        run: ls -la *.exe *.pck 2>/dev/null || ls -la
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.platform }}
-          path: build/${{ matrix.artifact }}
+          name: windows
+          path: |
+            fbv0.1.exe
+            fbv0.1.pck
+          if-no-files-found: error
+
+  export-linux:
+    name: Export Linux
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.6.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup templates
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates
+          mv /root/.local/share/godot/export_templates/4.6.1.stable ~/.local/share/godot/export_templates/4.6.1.stable
+
+      - name: Import project
+        run: godot --headless --import
+
+      - name: Export Linux
+        run: godot --headless --export-release "linux" .
+
+      - name: List files
+        run: ls -la fbv0.1.* 2>/dev/null || ls -la
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            fbv0.1.x86_64
+            fbv0.1.pck
           if-no-files-found: error
 
   release:
     name: Create Release
-    needs: export
+    needs: [export-windows, export-linux]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     
     steps:
-      - name: Download all artifacts
+      - name: Download Windows
         uses: actions/download-artifact@v4
         with:
+          name: windows
           path: release/
-          merge-multiple: true
 
-      - name: List release files
+      - name: Download Linux
+        uses: actions/download-artifact@v4
+        with:
+          name: linux
+          path: release/
+
+      - name: List files
         run: ls -la release/
 
       - name: Create Release
