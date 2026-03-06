@@ -1,13 +1,11 @@
 name: Export Game
 
-# 触发条件：推送 tag 或手动触发
 on:
   push:
     tags:
-      - 'v*'  # 推送 v 开头的 tag 时触发，如 v1.0.0
-  workflow_dispatch:  # 允许手动触发
+      - 'v*'
+  workflow_dispatch:
 
-# 设置权限
 permissions:
   contents: write
 
@@ -16,36 +14,41 @@ jobs:
     name: Export ${{ matrix.platform }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - platform: windows
             runner: windows-latest
-            extension: exe
+            preset: windows
+            artifact: fbv0.1.exe
           - platform: linux
             runner: ubuntu-latest
-            extension: x86_64
+            preset: linux
+            artifact: fbv0.1.x86_64
           - platform: mac
             runner: macos-latest
-            extension: app
+            preset: mac
+            artifact: fbv0.1.app.zip
 
     steps:
-      # 1. 检出代码
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. 设置 Godot 环境
       - name: Setup Godot
         uses: chickensoft-games/setup-godot@v1
         with:
           version: 4.6.1
           release_type: stable
+          include-templates: true
 
-      # 3. 导出游戏
-      - name: Export Game
+      - name: Import Project
+        run: godot --headless --import
+
+      - name: Build
         run: |
-          godot --headless --export-release "${{ matrix.platform }}" ./build/fbv0.1.${{ matrix.extension }}
+          mkdir -p build
+          godot --headless --export-release "${{ matrix.preset }}" build/${{ matrix.artifact }}
 
-      # 4. 上传构建产物
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
