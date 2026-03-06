@@ -9,6 +9,9 @@ on:
 permissions:
   contents: write
 
+env:
+  GODOT_VERSION: 4.6.1
+
 jobs:
   export:
     name: Export ${{ matrix.platform }}
@@ -33,31 +36,27 @@ jobs:
       - name: Setup Godot
         uses: chickensoft-games/setup-godot@v1
         with:
-          version: 4.6.1
+          version: ${{ env.GODOT_VERSION }}
           include-templates: true
 
-      - name: Debug - List files
-        run: ls -la
-
       - name: Import Project
-        run: godot --headless --import || true
+        run: godot --headless --import
 
-      - name: Debug - Check export presets
-        run: cat export_presets.cfg
-
-      - name: Build
+      - name: Export Game
         run: |
-          godot --headless --export-release "${{ matrix.preset }}" ${{ matrix.artifact }} --verbose
+          godot --headless --export-release "${{ matrix.preset }}"
 
-      - name: Debug - List output
-        run: ls -la
+      - name: Verify Export
+        run: |
+          ls -la
+          ls -la build/ || echo "build directory not found"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.platform }}
-          path: ${{ matrix.artifact }}
-          if-no-files-found: warn
+          path: build/${{ matrix.artifact }}
+          if-no-files-found: error
 
   release:
     name: Create Release
@@ -69,14 +68,14 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: build/
+          path: release/
           merge-multiple: true
 
-      - name: List files
-        run: ls -laR build/
+      - name: List release files
+        run: ls -la release/
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: build/*
+          files: release/*
           generate_release_notes: true
