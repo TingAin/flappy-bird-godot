@@ -25,10 +25,11 @@ jobs:
             runner: ubuntu-latest
             preset: linux
             artifact: fbv0.1.x86_64
-          - platform: mac
-            runner: macos-latest
-            preset: mac
-            artifact: fbv0.1.app.zip
+          # macOS 暂时禁用（内存不足问题）
+          # - platform: mac
+          #   runner: macos-latest
+          #   preset: mac
+          #   artifact: fbv0.1.app.zip
 
     steps:
       - name: Checkout
@@ -38,7 +39,6 @@ jobs:
         uses: chickensoft-games/setup-godot@v1
         with:
           version: 4.6.1
-          release_type: stable
           include-templates: true
 
       - name: Import Project
